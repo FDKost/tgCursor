@@ -1,99 +1,99 @@
 # AGENTS.md — Telegram Task Tracker Bot (Python)
 
-Этот файл описывает **контекст проекта** и **правила для ИИ‑агентов** (Cursor и др.) при работе с этим репозиторием. 
+This file describes the **project context** and **rules for AI agents** (Cursor, etc.) when working in this repository.
 
 ## Project Overview
 
-Python‑проект Telegram‑бота «Трекер задач»: создание задач из текста, статусы, дедлайны, напоминания, списки today/overdue и управление через inline‑кнопки.
+A Python Telegram bot “Task Tracker”: create tasks from text, manage statuses and deadlines, send reminders, show today/overdue lists, and control tasks via inline buttons.
 
 ## Tech Stack
 
-- **Language**: Python 3.10+ (см. `pyproject.toml` или `requirements.txt`)
-- **Telegram framework**: `aiogram` или `pyTelegramBotAPI` (`telebot`) — используй то, что уже подключено в проекте
-- **Config/secrets**: env‑переменные или `.env` (в репозиторий не коммитить)
-- **Storage (expected)**: SQLite/PostgreSQL (уточняется по проекту)
+- **Language**: Python 3.10+ (see `pyproject.toml` or `requirements.txt`)
+- **Telegram framework**: `aiogram` or `pyTelegramBotAPI` (`telebot`) — use whatever is already installed in the repo
+- **Config/secrets**: environment variables or `.env` (never commit to the repo)
+- **Storage (expected)**: SQLite/PostgreSQL (depends on deployment)
 - **Testing (expected)**: `pytest`
-- **Lint/format (expected)**: `ruff`, `black`, (опционально `mypy`)
+- **Lint/format (expected)**: `ruff`, `black`, (optional `mypy`)
 
 ## Project Structure (target)
 
-Адаптируй под реальную структуру репозитория (ниже — целевая схема):
+Adapt to the actual repository structure (below is the target layout):
 
 ```
 bot/
   main.py          # entrypoint
   config.py        # env/.env settings
-  handlers/        # Telegram handlers (тонкие)
+  handlers/        # Telegram handlers (thin)
   keyboards/       # inline/reply keyboards, callback data
-  services/        # бизнес-логика, интеграции
-  utils/           # утилиты
+  services/        # business logic, integrations
+  utils/           # utilities
 tests/
 requirements.txt | pyproject.toml
 .env.example
 ```
 
-Правила по архитектуре:
-- Новые обработчики — в отдельных модулях `bot/handlers/`.
-- Бизнес‑логика — в `bot/services/` или `bot/usecases/` (хендлеры остаются тонкими).
-- Не смешивать Telegram‑специфичный код и доменную логику в одном модуле.
+Architecture rules:
+- Put new handlers into dedicated modules under `bot/handlers/`.
+- Keep business logic in `bot/services/` or `bot/usecases/` (handlers must remain thin).
+- Do not mix Telegram-specific code and pure domain logic in the same module.
 
 ## Commands
 
-Команды зависят от того, `poetry` или `pip`. Если в проекте нет явного выбора — придерживайся того, что уже используется.
+Commands depend on whether the project uses `poetry` or `pip`. If the repo already uses one, stick to it.
 
 ### Install
 - `poetry install`
-- или `pip install -r requirements.txt`
+- or `pip install -r requirements.txt`
 
 ### Run (dev)
 - `poetry run python -m bot.main`
-- или `python -m bot.main`
+- or `python -m bot.main`
 
 ### Tests
 - `poetry run pytest`
-- или `pytest`
+- or `pytest`
 
 ### Lint / Typecheck / Format
 - `poetry run ruff check .`
-- `poetry run mypy .` (если подключён)
+- `poetry run mypy .` (if configured)
 - `poetry run black .`
 
 ## Reference Documentation (in-repo)
 
-Если эти файлы есть — используй их как «источник истины» по требованиям и соглашениям:
-- `PRD.md` — продуктовые требования и MVP‑скоуп
-- `bot/config.py` / `settings` — конфигурация и env‑переменные
-- `bot/handlers/*` — команды и user‑flows
-- `bot/services/*` — бизнес‑логика
+If these files exist, treat them as the source of truth for requirements and conventions:
+- `PRD.md` — product requirements and MVP scope
+- `bot/config.py` / `settings` — configuration and environment variables
+- `bot/handlers/*` — commands and user flows
+- `bot/services/*` — business logic
 
 ## Special Rules (Must Follow)
 
 ### Safety & Secrets
-- Никогда не коммить и не хардкодить: токены Telegram, API‑ключи, пароли, DSN.
-- Секреты берём только из окружения (`os.getenv`, pydantic settings и т.п.).
-- Не логировать приватные сообщения пользователей; при необходимости — только минимально и анонимизировано.
+- Never commit or hardcode Telegram tokens, API keys, passwords, DSNs, or other secrets.
+- Read secrets only from the environment (`os.getenv`, pydantic settings, etc.).
+- Do not log private user messages; if necessary, log only minimal, anonymized data.
 
 ### Change Policy
-- Предпочитай маленькие, понятные изменения; не делай большой рефакторинг без запроса.
-- Сохраняй текущий стиль и архитектуру проекта.
-- Любые изменения поведения бота (команды, статусы задач, напоминания) — сопровождай тестом или хотя бы «smoke‑проверкой» ключевых команд.
+- Prefer small, clear changes; do not do large refactors unless explicitly requested.
+- Preserve the current architecture and coding style.
+- Any behavior change (commands, task statuses, reminders) must include a test or at least a quick smoke check of key commands.
 
 ### Telegram Best Practices
-- Для `aiogram`: регистрируй хендлеры через роутеры/диспетчер, не вручную разбирай `update`.
-- Callback‑данные и команды держи централизованно (например, `bot/keyboards/constants.py`).
-- Ошибки Telegram API логируй, но пользователю показывай дружелюбные сообщения без трейсбеков.
+- For `aiogram`: register handlers via routers/dispatcher; do not manually parse `update`.
+- Keep callback data and commands centralized (e.g., `bot/keyboards/constants.py`).
+- Log Telegram API errors, but show friendly user messages without tracebacks.
 
 ### Performance & Reliability
-- Не блокируй event loop (для `aiogram`): долгие операции выноси в фон/пул.
-- Следи за лимитами Telegram API, избегай спама и бесконечных циклов отправки.
+- Do not block the event loop (for `aiogram`): move long operations to background tasks/thread pool.
+- Respect Telegram API limits; avoid spam and infinite send loops.
 
 ### Git / PR Hygiene
-- Один PR — одна логическая задача.
-- Коммиты небольшие и осмысленные.
-- Не коммить `.env`, дампы БД и локальные артефакты.
-- Пиши feature,fix,add и тд в начале, после ставь : и рассказывай что сделал.
+- One PR = one logical change.
+- Keep commits small and meaningful.
+- Do not commit `.env`, database dumps, or local artifacts.
+- Use commit prefixes like `feature:`, `fix:`, `add:` (etc.), then `:` and a short description.
 
 ## Maintenance
 
-`AGENTS.md` — источник истины для правил работы ИИ‑агентов в этом репо. Если появляются другие правила (например, в `.cursor/rules`) и есть конфликт — приоритет у `AGENTS.md`. Обновляй файл при изменении структуры/команд/процессов.
+`AGENTS.md` is the source of truth for AI-agent rules in this repository. If other rules appear (e.g., in `.cursor/rules`) and conflict with this file, `AGENTS.md` wins. Keep it up to date when the structure/commands/process change.
 
