@@ -1,0 +1,24 @@
+{
+    "version": 1,
+    "hooks": {
+      "afterFileEdit": [
+        {
+          "command": "./.cursor/hooks/after_implementer.sh"
+        }
+      ],
+      "subagentStop": [
+        {
+          "command": "./.cursor/hooks/after_tests_passed.sh"
+        },
+        {
+          "command": "./.cursor/hooks/after_tests_failed.sh"
+        },
+        {
+          "command": "./.cursor/hooks/after_verification_passed.sh"
+        },
+        {
+          "command": "./.cursor/hooks/after_verification_failed.sh"
+        }
+      ]
+    }
+  }
